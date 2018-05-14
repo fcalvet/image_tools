@@ -10,7 +10,7 @@ This file contains 2 augmentation "techniques":
     - elastic deformation with 2 different methods: deform_pixel on a pixel wide basis and deform_grid on a grid basis.
     - random_transform, which provides most of the keras image augmentation techniques.
     
-These 3 functions take as input X (the image), Y (an optionnal mask), and a list of keyed parameters.
+These 3 functions take as input X (the image), Y (an optionnal mask), and some keyed parameters.
 They also work both on 2D and 3D images.
 Elastic deformation is quite slow for 3D images, one could try to tune the order of the splines used for the different interpolations.
 """
@@ -338,7 +338,7 @@ def random_transform(x, y=None,
         x = np.expand_dims(x, len(x.shape))
         y = np.expand_dims(y, len(y.shape))
         x = apply_transform_gd(x, transform_matrix, img_channel_index)
-        y = apply_transform_gd(x, transform_matrix, img_channel_index)
+        y = apply_transform_gd(y, transform_matrix, img_channel_index)
 #        if channel_shift_range != 0:
 #            x = random_channel_shift(x, channel_shift_range, img_channel_index)
 #            y = random_channel_shift(y, channel_shift_range, img_channel_index)
