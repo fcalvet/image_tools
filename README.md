@@ -10,14 +10,14 @@ The demo requires on top: SimpleITK and pydicom
 A few examples are present in the demo folder extracted from the 3D-IRCADb 01 dataset (https://www.ircad.fr/research/3d-ircadb-01/)
 
 #### One with deform_grid
-    'augmentation': [1, 0, 1], 'random_deform': {'rotation_range_alpha': 20, 'width_shift_range': 0.1, 'height_shift_range': 0.1}, 'e_deform': {'points': 3, 'sigma': 10}, 'shape': [512, 512, 1]}
-![CT scans](demo/3Dircad[1, 0, 1]generator_1_im.png)
-![masks of the scans](demo/3Dircad[1, 0, 1]generator_1_mask.png)
+    'augmentation': [1, 0, 1], 'random_deform': {'rotation_range_alpha': 20, 'width_shift_range': 0.1, 'height_shift_range': 0.1}, 'e_deform': {'points': 3, 'sigma': 10}
+![CT scans](demo/results/3Dircad[1, 0, 1]generator_1_im.png)
+![masks of the scans](demo/results/3Dircad[1, 0, 1]generator_1_mask.png)
 
 #### One with deform_pixel
-    'augmentation': [1, 1, 0], 'e_deform': {'sigma': 3, 'alpha': 10} 'random_deform': {'height_shift_range': 0.1, 'width_shift_range': 0.1, 'rotation_range_alpha': 20}, 'to_slice': False}
-![CT scans](demo/3Dircad[1, 1, 0]generator_1_im.png)
-![masks of the scans](demo/3Dircad[1, 1, 0]generator_1_mask.png)
+    'augmentation': [1, 1, 0], 'random_deform': {'height_shift_range': 0.1, 'width_shift_range': 0.1, 'rotation_range_alpha': 20}, 'e_deform': {'sigma': 3, 'alpha': 10} 
+![CT scans](demo/results/3Dircad[1, 1, 0]generator_1_im.png)
+![masks of the scans](demo/results/3Dircad[1, 1, 0]generator_1_mask.png)
 
 
 ### Files
