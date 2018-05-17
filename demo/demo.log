@@ -1,0 +1,25 @@
+/nfs/home3/fcalvet/CNN3/lib/python3.5/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+Using TensorFlow backend.
+['demo/images/image_29', 'demo/images/image_30', 'demo/images/image_36', 'demo/images/image_49', 'demo/images/image_50', 'demo/images/image_68', 'demo/images/image_69', 'demo/images/image_77', 'demo/images/image_92', 'demo/images/image_105']
+using params:  {'to_slice': False, 'dataset': '3Dircad', 'augmentation': [1, 0, 1], 'random_deform': {'rotation_range_alpha': 20, 'width_shift_range': 0.1, 'height_shift_range': 0.1}, 'PreProcessing': <function preprocess_step1_LITS at 0x2aaebe682488>, 'ReadFunction': <function Read3Dircad at 0x2aaebe682400>, 'savefolder': 'demo/results/', 'e_deform': {'points': 3, 'sigma': 10}, 'shape': [512, 512, 1]}
+(512, 512)
+(512, 512)
+(512, 512)
+(512, 512)
+(512, 512)
+(512, 512)
+(512, 512)
+(512, 512)
+(512, 512)
+(512, 512)
+(512, 512)
+(512, 512)
+(512, 512)
+(512, 512)
+(512, 512)
+(512, 512)
+(512, 512)
+(512, 512)
+(512, 512)
+(512, 512)

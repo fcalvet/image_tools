@@ -12,11 +12,12 @@ This file contains 2 augmentation "techniques":
     
 These 3 functions take as input X (the image), Y (an optionnal mask), and some keyed parameters.
 They also work both on 2D and 3D images.
+They depend on numpy and scipy.ndimage
 Elastic deformation is quite slow for 3D images, one could try to tune the order of the splines used for the different interpolations.
 """
-import numpy as np
-import scipy.ndimage as ndi
-from scipy.ndimage import map_coordinates, gaussian_filter
+import numpy as np #general array manipulation
+import scipy.ndimage as ndi #used in random_transform
+from scipy.ndimage import map_coordinates, gaussian_filter #used for elastic deformation
 
 
 def deform_pixel(X, Y = None, alpha=15, sigma=3):
@@ -194,16 +195,19 @@ def random_transform(x, y=None,
     x: image
     y: segmentation of the image
     # Arguments
-        rotation_range: degrees (0 to 180).
-        width_shift_range: fraction of total width.
-        height_shift_range: fraction of total height.
-        shear_range: shear intensity (shear angle in radians).
-        zoom_range: amount of zoom. A sequence of two zoom will be randomly picked
+        rotation_range_alpha: angle in degrees (0 to 180), produces a range in which to uniformly pick the rotation.
+        rotation_range_beta = ...
+        rotation_range_gamma = ...
+        width_shift_range: fraction of total width, produces a range in which to uniformly pick the shift.
+        height_shift_range: fraction of total height, produces a range in which to uniformly pick the shift.
+        depth_shift_range: fraction of total depth, produces a range in which to uniformly pick the shift.
+        #shear_range: shear intensity (shear angle in radians).
+        zoom_range: factor of zoom. A zoom factor per axis will be randomly picked
             in the range [a, b].
-        channel_shift_range: shift range for each channels.
-        horizontal_flip: whether to randomly flip images horizontally.
-        vertical_flip: whether to randomly flip images vertically.
-        z_flip: whether to randomly flip images alogn the z axis.
+        #channel_shift_range: shift range for each channels.
+        horizontal_flip: boolean, whether to randomly flip images horizontally.
+        vertical_flip: boolean, whether to randomly flip images vertically.
+        z_flip: boolean, whether to randomly flip images along the z axis.
     '''
     # x is a single image, so it doesn't have image number at index 0
     print(x.shape)

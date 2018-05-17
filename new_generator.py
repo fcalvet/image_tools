@@ -8,6 +8,11 @@ under GPLv3
 
 import numpy as np #to manipulate the arrays
 import keras #to use the Sequence class
+
+import matplotlib
+matplotlib.use('Agg')#to solve the demo ?....
+
+
 from matplotlib import pyplot as plt #to create figures examples
 import os #to save figures
 
@@ -18,10 +23,10 @@ class DataGenerator(keras.utils.Sequence):
     Generates data for Keras
     Based on keras.utils.Sequence for efficient and safe multiprocessing
     idea from https://stanford.edu/~shervine/blog/keras-how-to-generate-data-on-the-fly.html
-    Need on initialization:
+    Needs on initialization:
         list_IDs: a list of ID which will be supplied to the ReadFunction to obtain
         params: a dictionnary of parameters, explanation supplied in the README
-        batch_size
+        batch_size: number of IDs used to generate a batch
         shuffle: if set to True, the list will be shuffled every time an epoch ends
         plotgenerator: number of times a part of a batch will be saved to disk as examples
     """
@@ -81,30 +86,27 @@ class DataGenerator(keras.utils.Sequence):
             y = ReadFunction(ID,im_mask="mask")
             #print(ID)
             #print(np.min(x),np.max(x),np.min(y),np.max(y))
-            if len(x.shape) == 2:
+            if self.params["to_slice"] == False:
                 #print("original", X)
-                x = pre_process(x)
-                y = pre_process(y,mask=True)
+                x = pre_process(x, self.params["shape"])
+                y = pre_process(y, self.params["shape"], mask=True)
                 x,y = self.imaugment(x,y) 
                 #print(np.min(x),np.max(x),np.min(y),np.max(y))  
                 print(x.shape)
                 X.append(x)
                 Y.append(y)
                 
-            elif len(x.shape) == 3 and self.params["to_slice"] == False:
-                x,y = pre_process(x,y,self.params["shape"])
-                x,y = self.imaugment(x,y)
-                X.append(x)
-                Y.append(y)
-                
-            elif len(x.shape) == 3 and self.params["to_slice"] == True:
+            elif self.params["to_slice"] == True and len(x.shape) == 3:
                 x,y = self.imaugment(x,y)
                 slices_x, slices_y = self.slicer(x,y)
                 for x,y in zip(slices_x, slices_y):
-                    x,y = pre_process(x,y,self.params["shape"])
+                    x = pre_process(x, self.params["shape"])
+                    y = pre_process(y, self.params["shape"], mask=True)
                     #print(len(x),x)
                     X.append(x)
                     Y.append(y)
+            else:
+                raise RuntimeError("asked to slice but the input is not a 3D volume")
         #FIXME: add batch normalization in a way ?
             
         #print(len(X),len(X[0].shape))
@@ -170,7 +172,7 @@ class DataGenerator(keras.utils.Sequence):
                 pltname = list_IDs[i][-27:]
                 fz = 5  # Works best after saving
                 ax.set_title(pltname, fontsize=fz)
-            plt.savefig(os.path.join(self.params["savefolder"], str(self.params["augmentation"])+'generator_' + str(self.plotgenerator) +'_im.png'))
+            plt.savefig(os.path.join(self.params["savefolder"], str(self.params["dataset"])+str(self.params["augmentation"])+'generator_' + str(self.plotgenerator) +'_im.png'))
             
             plt.figure(figsize=(6,11),dpi=200)
             # print("Saving mask batch...")
@@ -183,7 +185,7 @@ class DataGenerator(keras.utils.Sequence):
                 pltname = list_IDs[i][-27:]
                 fz = 5  # Works best after saving
                 ax.set_title(pltname, fontsize=fz)
-            plt.savefig(os.path.join(self.params["savefolder"], str(self.params["augmentation"])+'generator_' +  str(self.plotgenerator) +'_mask.png'))
+            plt.savefig(os.path.join(self.params["savefolder"], str(self.params["dataset"])+str(self.params["augmentation"])+'generator_' +  str(self.plotgenerator) +'_mask.png'))
             
             
         if self.plotgenerator > 0 and len(X[0].shape) == 3:
@@ -208,7 +210,7 @@ class DataGenerator(keras.utils.Sequence):
                 pltname = "slice "+str(steps[i])
                 fz = 5  # Works best after saving
                 ax.set_title(pltname, fontsize=fz)
-            plt.savefig(os.path.join(self.params["savefolder"], str(self.params["augmentation"])+'generator_' + str(self.plotgenerator) +'_im.png'))
+            plt.savefig(os.path.join(self.params["savefolder"], str(self.params["dataset"])+str(self.params["augmentation"])+'generator_' + str(self.plotgenerator) +'_im.png'))
             
             plt.figure(figsize=(6,11),dpi=200)
             plt.suptitle(list_IDs[0], fontsize=5)
@@ -223,5 +225,5 @@ class DataGenerator(keras.utils.Sequence):
                 pltname = "slice "+str(steps[i])
                 fz = 5  # Works best after saving
                 ax.set_title(pltname, fontsize=fz)
-            plt.savefig(os.path.join(self.params["savefolder"], str(self.params["augmentation"])+'generator_' +  str(self.plotgenerator) +'_mask.png'))
+            plt.savefig(os.path.join(self.params["savefolder"], str(self.params["dataset"])+str(self.params["augmentation"])+'generator_' +  str(self.plotgenerator) +'_mask.png'))
         self.plotgenerator-=1
