@@ -78,7 +78,7 @@ if __name__ == '__main__':
     
     params = {}
     params["dataset"] = "3Dircad"
-    params["augmentation"] = [1,0,1]
+    params["augmentation"] = [1,1,0]
     augmentparams = dict()
     params["random_deform"] = dict()
     params["e_deform"] = dict()
@@ -91,9 +91,9 @@ if __name__ == '__main__':
     params["random_deform"]['rotation_range_alpha'] = 20
 
     # Add elastic deformations
-    params["e_deform"]["points"] = 3
-    #params["e_deform"]["alpha"] = 5#0.05*shape[0]
-    params["e_deform"]["sigma"] = 10#(5, 10)
+    #params["e_deform"]["points"] = 3
+    params["e_deform"]["alpha"] = 10
+    params["e_deform"]["sigma"] = 3
 
     params['ReadFunction'] = Read3Dircad
     params['PreProcessing'] = preprocess_step1_LITS

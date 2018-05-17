@@ -2,7 +2,7 @@
   from ._conv import register_converters as _register_converters
 Using TensorFlow backend.
 ['demo/images/image_29', 'demo/images/image_30', 'demo/images/image_36', 'demo/images/image_49', 'demo/images/image_50', 'demo/images/image_68', 'demo/images/image_69', 'demo/images/image_77', 'demo/images/image_92', 'demo/images/image_105']
-using params:  {'to_slice': False, 'dataset': '3Dircad', 'augmentation': [1, 0, 1], 'random_deform': {'rotation_range_alpha': 20, 'width_shift_range': 0.1, 'height_shift_range': 0.1}, 'PreProcessing': <function preprocess_step1_LITS at 0x2aaebe682488>, 'ReadFunction': <function Read3Dircad at 0x2aaebe682400>, 'savefolder': 'demo/results/', 'e_deform': {'points': 3, 'sigma': 10}, 'shape': [512, 512, 1]}
+using params:  {'to_slice': False, 'PreProcessing': <function preprocess_step1_LITS at 0x2ba73f1e6b70>, 'e_deform': {'alpha': 10, 'sigma': 3}, 'dataset': '3Dircad', 'random_deform': {'width_shift_range': 0.1, 'rotation_range_alpha': 20, 'height_shift_range': 0.1}, 'augmentation': [1, 1, 0], 'ReadFunction': <function Read3Dircad at 0x2ba735ab8400>, 'shape': [512, 512, 1], 'savefolder': 'demo/results/'}
 (512, 512)
 (512, 512)
 (512, 512)
