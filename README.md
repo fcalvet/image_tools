@@ -5,20 +5,6 @@ The requirements for the generator and augmentation are the following: numpy, ma
 
 The demo requires on top: SimpleITK and pydicom
 
-### Demo images
-A few examples are present in the demo folder extracted from the 3D-IRCADb 01 dataset (https://www.ircad.fr/research/3d-ircadb-01/)
-
-#### One with deform_grid
-    'augmentation': [1, 0, 1], 'random_deform': {'rotation_range_alpha': 20, 'width_shift_range': 0.1, 'height_shift_range': 0.1}, 'e_deform': {'points': 3, 'sigma': 10}
-![CT scans](/demo/results/im101.png)
-![masks of the scans](/demo/results/mask101.png)
-
-#### One with deform_pixel
-    'augmentation': [1, 1, 0], 'random_deform': {'height_shift_range': 0.1, 'width_shift_range': 0.1, 'rotation_range_alpha': 20}, 'e_deform': {'sigma': 3, 'alpha': 10} 
-![CT scans](/demo/results/im110.png)
-![masks of the scans](/demo/results/mask110.png)
-
-
 ### Files
 + new_generator.py contains the generator class (it's built for generating images and their corresponding segmentation mask, but can be adapted to only work on the images without mask)
 + image_augmentation.py contains the image augmentation functions (which can act on either image, or image,mask )
@@ -74,3 +60,16 @@ for pixel based deformation, name the dictionnary "e_deform_p":
 
 ### save_image
 The function save_image can be used to save the predicted images, see the save_predict function in demo.py
+
+### Demo images
+A few examples are present in the demo folder extracted from the 3D-IRCADb 01 dataset (https://www.ircad.fr/research/3d-ircadb-01/)
+
+#### One with deform_grid
+    'augmentation': [1, 0, 1], 'random_deform': {'rotation_range_alpha': 20, 'width_shift_range': 0.1, 'height_shift_range': 0.1}, 'e_deform': {'points': 3, 'sigma': 10}
+![CT scans](/demo/results/im101.png)
+![masks of the scans](/demo/results/mask101.png)
+
+#### One with deform_pixel
+    'augmentation': [1, 1, 0], 'random_deform': {'height_shift_range': 0.1, 'width_shift_range': 0.1, 'rotation_range_alpha': 20}, 'e_deform': {'sigma': 3, 'alpha': 10} 
+![CT scans](/demo/results/im110.png)
+![masks of the scans](/demo/results/mask110.png)
