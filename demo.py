@@ -70,6 +70,19 @@ def normalize_image(img, mask=True):
     else:
         #print("an empty image")
         return 1.*img
+    
+    
+def save_predict(model, generator):
+    """
+    Save image prediction using model for example X at path
+    Remember to set shuffle to False for the generator,
+    otherwise the order of samples between your data images and predicted images won't be the same
+    """
+    Y = model.predict_generator(generator, verbose = 1)
+    print(Y.shape)
+    generator.to_predict()
+    for i in range(int(len(Y)/generator.__len__())):
+        generator.save_images(Y[i:i+generator.__len__()], None, None, predict = True)
 
 
 if __name__ == '__main__':    
@@ -78,11 +91,12 @@ if __name__ == '__main__':
     
     params = {}
     params["dataset"] = "3Dircad"
-    params["augmentation"] = [1,1,0]
+    params["augmentation"] = [1,1,1]
     augmentparams = dict()
     params["random_deform"] = dict()
-    params["e_deform"] = dict()
-    params["to_slice"] = False
+    params["only"] = None
+    params["e_deform_g"] = dict()
+    params["e_deform_p"] = dict()
     params["shape"] = [512, 512,1]
     batch_size = 15
     # Standard data augmentation
@@ -91,9 +105,10 @@ if __name__ == '__main__':
     params["random_deform"]['rotation_range_alpha'] = 20
 
     # Add elastic deformations
-    #params["e_deform"]["points"] = 3
-    params["e_deform"]["alpha"] = 10
-    params["e_deform"]["sigma"] = 3
+    params["e_deform_g"]["points"] = 3
+    params["e_deform_p"]["alpha"] = 10
+    params["e_deform_p"]["sigma"] = 3
+    params["e_deform_g"]["sigma"] = 10
 
     params['ReadFunction'] = Read3Dircad
     params['PreProcessing'] = preprocess_step1_LITS

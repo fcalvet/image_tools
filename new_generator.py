@@ -10,7 +10,7 @@ import numpy as np #to manipulate the arrays
 import keras #to use the Sequence class
 
 import matplotlib
-matplotlib.use('Agg')#to solve the demo ?....
+matplotlib.use('Agg')
 
 
 from matplotlib import pyplot as plt #to create figures examples
@@ -37,6 +37,7 @@ class DataGenerator(keras.utils.Sequence):
         self.shuffle = shuffle
         self.plotgenerator = plotgenerator
         self.params = params
+        self.plotedgenerator = 0 #counts the number of images saved
         self.on_epoch_end()
 
     def __len__(self):
@@ -84,52 +85,32 @@ class DataGenerator(keras.utils.Sequence):
         for ID in list_IDs:
             x = ReadFunction(ID,im_mask="im")
             y = ReadFunction(ID,im_mask="mask")
+            #print(x.shape)
             #print(ID)
             #print(np.min(x),np.max(x),np.min(y),np.max(y))
-            if self.params["to_slice"] == False:
-                #print("original", X)
-                x = pre_process(x, self.params["shape"])
-                y = pre_process(y, self.params["shape"], mask=True)
-                x,y = self.imaugment(x,y) 
-                #print(np.min(x),np.max(x),np.min(y),np.max(y))  
-                print(x.shape)
-                X.append(x)
-                Y.append(y)
-                
-            elif self.params["to_slice"] == True and len(x.shape) == 3:
-                x,y = self.imaugment(x,y)
-                slices_x, slices_y = self.slicer(x,y)
-                for x,y in zip(slices_x, slices_y):
-                    x = pre_process(x, self.params["shape"])
-                    y = pre_process(y, self.params["shape"], mask=True)
-                    #print(len(x),x)
-                    X.append(x)
-                    Y.append(y)
-            else:
-                raise RuntimeError("asked to slice but the input is not a 3D volume")
+            #print("original", X)
+            x = pre_process(x, self.params["shape"])
+            y = pre_process(y, self.params["shape"], mask=True)
+            x,y = self.imaugment(x,y) 
+            #print(np.min(x),np.max(x),np.min(y),np.max(y))  
+            #print(x.shape)
+            X.append(x)
+            Y.append(y)
         #FIXME: add batch normalization in a way ?
             
         #print(len(X),len(X[0].shape))
         X=np.asarray(X)
         Y=np.asarray(Y)
-        #print(X.shape,Y.shape)
+        print(X.shape,Y.shape)
         self.save_images(X,Y,list_IDs)
         X = np.expand_dims(X, len(X.shape)) #add a channel axis for tensorflow
         Y = np.expand_dims(Y, len(Y.shape))
-        return X,Y
-    
-    def slicer(self, x, y):
-        """
-        Slices the 3D volume into slices of thickness corresponding to the last dimension
-        """
-        sz=self.params["shape"][:-1] #removing the channel dimension
-        slices=int(np.floor(x.shape[-1]/sz[-1]))
-        slices_x=[]
-        slices_y=[]
-        for i in range(slices):
-            slices_x.append(x[...,i*sz[-1]:(i+1)*sz[-1]])
-            slices_y.append(y[...,i*sz[-1]:(i+1)*sz[-1]])
-        return slices_x, slices_y
+        if self.params["only"] == "im":
+            return X, None
+        elif self.params["only"] == "mask":
+            return Y, Y #return Y, None      return Y, Y
+        else:
+            return X,Y
     
     def imaugment(self, X, Y):
         """
@@ -145,17 +126,24 @@ class DataGenerator(keras.utils.Sequence):
             X, Y = random_transform(X, Y, **self.params["random_deform"])
             #print("augmented",X)
         if self.params["augmentation"][1] == True:
-            X, Y = deform_pixel(X,Y, **self.params["e_deform"])
+            X, Y = deform_pixel(X,Y, **self.params["e_deform_p"])
         if self.params["augmentation"][2] == True:
-            X, Y = deform_grid(X,Y, **self.params["e_deform"])
+            X, Y = deform_grid(X,Y, **self.params["e_deform_g"])
             #print("deformed!")
         return X,Y
     
-    def save_images(self, X,Y, list_IDs):
+    def save_images(self, X,Y, list_IDs, predict = False):
         """
         Save a png to disk (params["savefolder"]) to illustrate the data been generated
+        predict: if set to True allows the saving of predicted images, remember to set Y and list_IDs as None
+        the to_predict function can be used to reset the counter of saved images, this allows if shuffle is False to have the same order between saved generated samples and the predicted ones
         """
-        if self.plotgenerator > 0 and len(X[0].shape) == 2:
+        if predict:
+            genOrPred = "predict_"
+            X = np.squeeze(X)
+        else:
+            genOrPred = "generator_"
+        if self.plotgenerator > self.plotedgenerator and len(X[0].shape) == 2:
             '''
             Save augmented images for 2D (will save 10 slices from different patients)
             '''
@@ -166,64 +154,80 @@ class DataGenerator(keras.utils.Sequence):
             for i in range(min(nbr_samples,10)):
                 im=X[i]
                 #print(i,im)
-                ax = plt.subplot(5, 2, i+1)#fig, ax = subplots(figsize=(18, 2))
-                plt.imshow(np.squeeze(im), cmap='gray')#, vmin=0, vmax=1)
-                plt.axis('off')
-                pltname = list_IDs[i][-27:]
-                fz = 5  # Works best after saving
-                ax.set_title(pltname, fontsize=fz)
-            plt.savefig(os.path.join(self.params["savefolder"], str(self.params["dataset"])+str(self.params["augmentation"])+'generator_' + str(self.plotgenerator) +'_im.png'))
-            
-            plt.figure(figsize=(6,11),dpi=200)
-            # print("Saving mask batch...")
-            #print(Y[1])
-            for i in range(min(nbr_samples,10)):
-                im=Y[i]
                 ax = plt.subplot(5, 2, i+1)
                 plt.imshow(np.squeeze(im), cmap='gray')#, vmin=0, vmax=1)
                 plt.axis('off')
-                pltname = list_IDs[i][-27:]
+                if predict:
+                    pltname="noname"
+                else:
+                    pltname = list_IDs[i][-27:]
                 fz = 5  # Works best after saving
                 ax.set_title(pltname, fontsize=fz)
-            plt.savefig(os.path.join(self.params["savefolder"], str(self.params["dataset"])+str(self.params["augmentation"])+'generator_' +  str(self.plotgenerator) +'_mask.png'))
+            plt.savefig(os.path.join(self.params["savefolder"],
+                                     str(self.params["dataset"])+str(self.params["augmentation"])+ genOrPred + str(self.plotedgenerator) +'_im.png'))
             
+            if not predict:
+                plt.figure(figsize=(6,11),dpi=200)
+                # print("Saving mask batch...")
+                #print(Y[1])
+                for i in range(min(nbr_samples,10)):
+                    im=Y[i]
+                    ax = plt.subplot(5, 2, i+1)
+                    plt.imshow(np.squeeze(im), cmap='gray')#, vmin=0, vmax=1)
+                    plt.axis('off')
+                    pltname = list_IDs[i][-27:]
+                    fz = 5  # Works best after saving
+                    ax.set_title(pltname, fontsize=fz)
+                plt.savefig(os.path.join(self.params["savefolder"],
+                                         str(self.params["dataset"])+str(self.params["augmentation"])+ genOrPred + str(self.plotedgenerator) +'_mask.png'))
+                
             
-        if self.plotgenerator > 0 and len(X[0].shape) == 3:
+        if self.plotgenerator > self.plotedgenerator and len(X[0].shape) == 3:
             '''
             Save augmented images for 3D (will save 10 slices from a single volume)
             '''
             Xto_print = X[0]
-            Yto_print = Y[0]
-            print(Xto_print.shape)
+            #print(Xto_print.shape)
             steps = np.linspace(0, Xto_print.shape[2]-1, num=10, dtype=np.int)
             # print("Saving image batch...")
             plt.figure(figsize=(6,11),dpi=200)
-            plt.suptitle(list_IDs[0], fontsize=5)
+            if predict:
+               plt.suptitle("noname", fontsize=5)
+            else:
+               plt.suptitle(list_IDs[0], fontsize=5)
             #print(X[1])
             for i in range(10):
                 #print(Xto_print.shape)
                 im=Xto_print[:,:,steps[i]]
                 #print(i,im)
-                ax = plt.subplot(5, 2, i+1)#fig, ax = subplots(figsize=(18, 2))
+                ax = plt.subplot(5, 2, i+1)
                 plt.imshow(np.squeeze(im), cmap='gray')#, vmin=0, vmax=1)
                 plt.axis('off')
                 pltname = "slice "+str(steps[i])
                 fz = 5  # Works best after saving
                 ax.set_title(pltname, fontsize=fz)
-            plt.savefig(os.path.join(self.params["savefolder"], str(self.params["dataset"])+str(self.params["augmentation"])+'generator_' + str(self.plotgenerator) +'_im.png'))
-            
-            plt.figure(figsize=(6,11),dpi=200)
-            plt.suptitle(list_IDs[0], fontsize=5)
-            # print("Saving mask batch...")
-            #print(Y[1])
-            for i in range(10):
-                im=Yto_print[:,:,steps[i]]
-                #print(i,im)
-                ax = plt.subplot(5, 2, i+1)#fig, ax = subplots(figsize=(18, 2))
-                plt.imshow(np.squeeze(im), cmap='gray')#, vmin=0, vmax=1)
-                plt.axis('off')
-                pltname = "slice "+str(steps[i])
-                fz = 5  # Works best after saving
-                ax.set_title(pltname, fontsize=fz)
-            plt.savefig(os.path.join(self.params["savefolder"], str(self.params["dataset"])+str(self.params["augmentation"])+'generator_' +  str(self.plotgenerator) +'_mask.png'))
-        self.plotgenerator-=1
+            plt.savefig(os.path.join(self.params["savefolder"],
+                                     str(self.params["dataset"])+str(self.params["augmentation"])+ genOrPred + str(self.plotedgenerator) +'_im.png'))
+            plt.close()
+            if not predict:
+                Yto_print = Y[0]
+                plt.figure(figsize=(6,11),dpi=200)
+                plt.suptitle(list_IDs[0], fontsize=5)
+                # print("Saving mask batch...")
+                #print(Y[1])
+                for i in range(10):
+                    im=Yto_print[:,:,steps[i]]
+                    #print(i,im)
+                    ax = plt.subplot(5, 2, i+1)
+                    plt.imshow(np.squeeze(im), cmap='gray')#, vmin=0, vmax=1)
+                    plt.axis('off')
+                    pltname = "slice "+str(steps[i])
+                    fz = 5  # Works best after saving
+                    ax.set_title(pltname, fontsize=fz)
+                plt.savefig(os.path.join(self.params["savefolder"],
+                                         str(self.params["dataset"])+str(self.params["augmentation"])+ genOrPred + str(self.plotedgenerator) +'_mask.png'))
+                plt.close()
+        self.plotedgenerator += 1
+        
+    def to_predict(self):
+        self.plotedgenerator = 0

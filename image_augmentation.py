@@ -210,7 +210,7 @@ def random_transform(x, y=None,
         z_flip: boolean, whether to randomly flip images along the z axis.
     '''
     # x is a single image, so it doesn't have image number at index 0
-    print(x.shape)
+    #print(x.shape)
         
     # use composition of homographies to generate final transform that needs to be applied
     if rotation_range_alpha:

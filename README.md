@@ -10,13 +10,13 @@ A few examples are present in the demo folder extracted from the 3D-IRCADb 01 da
 
 #### One with deform_grid
     'augmentation': [1, 0, 1], 'random_deform': {'rotation_range_alpha': 20, 'width_shift_range': 0.1, 'height_shift_range': 0.1}, 'e_deform': {'points': 3, 'sigma': 10}
-![CT scans](/demo/results/3Dircad[1, 0, 1]generator_1_im.png)
-![masks of the scans](/demo/results/3Dircad[1, 0, 1]generator_1_mask.png)
+![CT scans](/demo/results/im101.png)
+![masks of the scans](/demo/results/mask101.png)
 
 #### One with deform_pixel
     'augmentation': [1, 1, 0], 'random_deform': {'height_shift_range': 0.1, 'width_shift_range': 0.1, 'rotation_range_alpha': 20}, 'e_deform': {'sigma': 3, 'alpha': 10} 
-![CT scans](/demo/results/3Dircad[1%2C 1%2C 0]generator_1_im.png)
-![masks of the scans](/demo/results/3Dircad[1%2C 1%2C 0]generator_1_mask.png)
+![CT scans](/demo/results/im110.png)
+![masks of the scans](/demo/results/mask110.png)
 
 
 ### Files
@@ -32,9 +32,9 @@ is used to supply the generator with a lot of useful informations regarding the 
 + random_deform: a dictionnary containing the parameters to be passed to random_transform
 + e_deform: a dictionnary containing the parameters to be passed to the chosen elastic deformation function
 + shape: the input shape of the network, ie the shape of the images including the channel
-+ ReadFunction: a function to read the images, which given an ID and if it should query the corresponding image or mask, returns a npy array
++ ReadFunction: a function to read the images, which given an ID and if it should query the corresponding image or mask, returns a npy array (the ID can be any object, eg a string identifying the file or a list with the filename and the coordiantes of a patch to take from it and so on...)
 + PreProcessing: a preprocessing function, which takes as input the image, the size of the desired output image and, optionnally if the image is a mask or not (in order to apply different preprocessing) and return the preprocessed image
-+ to_slice: if set to True, slices 3D volumes into slices of thickness corresponding to last dimension of shape (of course excluding the channel) /!\ Experimental behaviour !
++ only: to return only the "im" or the "mask", useful for training autoencoders, set it to None otherwise
 + savefolder: the path of the folder to which the examples are going to be saved
 + dataset: the name of the dataset used
 
@@ -64,10 +64,13 @@ The following parameters can be supplied in the random_transform dictionnary:
 + z_flip: boolean, whether to randomly flip images along the z axis.
 
 #### e_deform
-for grid based deformation:
+for grid based deformation, name the dictionnary "e_deform_g":
 + sigma = standard deviation of the normal distribution
 + points = number of points of the each side of the square grid
 
-for pixel based deformation:
+for pixel based deformation, name the dictionnary "e_deform_p":
 + alpha = scaling factor the deformation
 + sigma = smooting factor
+
+### save_image
+The function save_image can be used to save the predicted images, see the save_predict function in demo.py
