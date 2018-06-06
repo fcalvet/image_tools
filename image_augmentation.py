@@ -350,7 +350,7 @@ def random_transform(x, y=None,
         if horizontal_flip:
             if np.random.random() < 0.5:
                 x = flip_axis(x, img_col_index)
-                y = flip_axis(y, img_row_index)
+                y = flip_axis(y, img_col_index)
     
         if vertical_flip:
             if np.random.random() < 0.5:
