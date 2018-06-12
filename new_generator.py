@@ -83,15 +83,24 @@ class DataGenerator(keras.utils.Sequence):
         pre_process = self.params['PreProcessing']
         # Generate data
         for ID in list_IDs:
-            x = ReadFunction(ID,im_mask="im")
-            y = ReadFunction(ID,im_mask="mask")
+            if self.params["only"] == "im":
+                x = ReadFunction(ID,im_mask="im")
+                x = pre_process(x, self.params["shape"])
+                y = None
+            if self.params["only"] == "mask":
+                x = ReadFunction(ID,im_mask="mask")
+                x = pre_process(x, self.params["shape"], mask=True)
+                y = None
+            else:
+                x = ReadFunction(ID,im_mask="im")
+                y = ReadFunction(ID,im_mask="mask")
+                x = pre_process(x, self.params["shape"])
+                y = pre_process(y, self.params["shape"], mask=True)
             #print(x.shape)
             #print(ID)
             #print(np.min(x),np.max(x),np.min(y),np.max(y))
             #print("original", X)
-            x = pre_process(x, self.params["shape"])
-            y = pre_process(y, self.params["shape"], mask=True)
-            x,y = self.imaugment(x,y) 
+            x,y = self.imaugment(x,y)
             #print(np.min(x),np.max(x),np.min(y),np.max(y))  
             #print(x.shape)
             X.append(x)
@@ -105,10 +114,8 @@ class DataGenerator(keras.utils.Sequence):
         self.save_images(X,Y,list_IDs)
         X = np.expand_dims(X, len(X.shape)) #add a channel axis for tensorflow
         Y = np.expand_dims(Y, len(Y.shape))
-        if self.params["only"] == "im":
-            return X, None
-        elif self.params["only"] == "mask":
-            return Y, Y #return Y, None      return Y, Y
+        if self.params["only"] == "im" or self.params["only"] == "mask":
+            return X, X #return X, X    return X, None
         else:
             return X,Y
     
@@ -118,7 +125,7 @@ class DataGenerator(keras.utils.Sequence):
             augmentation techniques adapted from Keras ImageDataGenerator
             elastic deformation
         """
-        if X.shape != Y.shape:
+        if Y is not None and X.shape != Y.shape:
             raise ValueError("image and mask should have the same size")
         #print("preprocessed", X)
         if self.params["augmentation"][0] == True:
@@ -143,6 +150,7 @@ class DataGenerator(keras.utils.Sequence):
             X = np.squeeze(X)
         else:
             genOrPred = "generator_"
+        #print(len(X),X[0].shape())
         if self.plotgenerator > self.plotedgenerator and len(X[0].shape) == 2:
             '''
             Save augmented images for 2D (will save 10 slices from different patients)
@@ -165,8 +173,9 @@ class DataGenerator(keras.utils.Sequence):
                 ax.set_title(pltname, fontsize=fz)
             plt.savefig(os.path.join(self.params["savefolder"],
                                      str(self.params["dataset"])+str(self.params["augmentation"])+ genOrPred + str(self.plotedgenerator) +'_im.png'))
+            plt.close()
             
-            if not predict:
+            if not predict and self.params["only"] is None:
                 plt.figure(figsize=(6,11),dpi=200)
                 # print("Saving mask batch...")
                 #print(Y[1])
@@ -180,7 +189,7 @@ class DataGenerator(keras.utils.Sequence):
                     ax.set_title(pltname, fontsize=fz)
                 plt.savefig(os.path.join(self.params["savefolder"],
                                          str(self.params["dataset"])+str(self.params["augmentation"])+ genOrPred + str(self.plotedgenerator) +'_mask.png'))
-                
+                plt.close()
             
         if self.plotgenerator > self.plotedgenerator and len(X[0].shape) == 3:
             '''
@@ -209,7 +218,7 @@ class DataGenerator(keras.utils.Sequence):
             plt.savefig(os.path.join(self.params["savefolder"],
                                      str(self.params["dataset"])+str(self.params["augmentation"])+ genOrPred + str(self.plotedgenerator) +'_im.png'))
             plt.close()
-            if not predict:
+            if not predict and self.params["only"] is None:
                 Yto_print = Y[0]
                 plt.figure(figsize=(6,11),dpi=200)
                 plt.suptitle(list_IDs[0], fontsize=5)
