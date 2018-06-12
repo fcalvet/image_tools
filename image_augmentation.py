@@ -54,7 +54,7 @@ def deform_pixel(X, Y = None, alpha=15, sigma=3):
         raise ValueError("can't deform because the image is not either 2D or 3D")
         
     if Y is None:
-        return map_coordinates(X, indices, order=3).reshape(shape)
+        return map_coordinates(X, indices, order=3).reshape(shape), None
     else:
         return map_coordinates(X, indices, order=3).reshape(shape), map_coordinates(Y, indices, order=0).reshape(shape)
     
@@ -97,7 +97,7 @@ def deform_grid (X, Y=None, sigma=25, points=3):
         coordinates[i]=np.add(coordinates[i],y) #adding the displacement
     
     if Y is None:
-        return map_coordinates(X, coordinates, order=3).reshape(shape)
+        return map_coordinates(X, coordinates, order=3).reshape(shape), None
     else:
         return map_coordinates(X, coordinates, order=3).reshape(shape), map_coordinates(Y, coordinates, order=0).reshape(shape)
 
@@ -336,7 +336,7 @@ def random_transform(x, y=None,
                 x = flip_axis(x, img_z_index)
                 
         x = np.squeeze(x)
-        return x
+        return x, None
     
     else:
         x = np.expand_dims(x, len(x.shape))
