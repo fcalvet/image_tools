@@ -38,9 +38,9 @@ Elastic deformation is quite slow for 3D images, one could try to tune the order
 #### random_transform
 
 The following parameters can be supplied in the random_transform dictionnary:
-+ rotation_range_alpha = angle in degrees (0 to 180), produces a range in which to uniformly pick the rotation.
-+ rotation_range_beta = ...
-+ rotation_range_gamma = ...
++ rotation_range_alpha = angle in degrees (0 to 180), produces a range in which to uniformly pick the rotation in x.
++ rotation_range_beta = angle in degrees (0 to 180), produces a range in which to uniformly pick the rotation in y.
++ rotation_range_gamma = angle in degrees (0 to 180), produces a range in which to uniformly pick the rotation in z.
 + width_shift_range: fraction of total width, produces a range in which to uniformly pick the shift.
 + height_shift_range: fraction of total height, produces a range in which to uniformly pick the shift.
 + depth_shift_range: fraction of total depth, produces a range in which to uniformly pick the shift.
