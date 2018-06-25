@@ -14,15 +14,16 @@ The demo requires on top: SimpleITK and pydicom
 
 ### the params dictionnary
 is used to supply the generator with a lot of useful informations regarding the data to be generated. The following list explains the parameters useful for data generation:
++ dataset: the name of the dataset used
 + augmentation: a tuple of booleans values selecting the augmentations techniques to apply in the following order: random_transform, deform_grid, deform_pixel
 + random_deform: a dictionnary containing the parameters to be passed to random_transform
-+ e_deform: a dictionnary containing the parameters to be passed to the chosen elastic deformation function
++ only: to return only the "im" or the "mask", useful for training autoencoders, set it to None otherwise
++ e_deform_g: a dictionnary containing the parameters to be passed to the chosen elastic deformation function, the deformation is computed from a grid (see section below on the augmentation techniques)
++ e_deform_p: a dictionnary containing the parameters to be passed to the chosen elastic deformation function, the deformation is computed independtly, pixel-wise (see section below on the augmentation techniques)
 + shape: the input shape of the network, ie the shape of the images including the channel
 + ReadFunction: a function to read the images, which given an ID and if it should query the corresponding image or mask, returns a npy array (the ID can be any object, eg a string identifying the file or a list with the filename and the coordiantes of a patch to take from it and so on...)
 + PreProcessing: a preprocessing function, which takes as input the image, the size of the desired output image and, optionnally if the image is a mask or not (in order to apply different preprocessing) and return the preprocessed image
-+ only: to return only the "im" or the "mask", useful for training autoencoders, set it to None otherwise
 + savefolder: the path of the folder to which the examples are going to be saved
-+ dataset: the name of the dataset used
 
 ### the augmentation techniques
 
