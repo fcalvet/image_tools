@@ -1,9 +1,18 @@
 This repository contains a generator for Keras (using a channel last configuration, eg with TensorFlow backend), capable of handling 2D and 3D arrays, and augmenting the data using affine transforms and elastics deformations while being based on keras.utils.Sequence for efficient and safe multiprocessing.
 
-
 The requirements for the generator and augmentation are the following: numpy, matplotlib, scipy, and keras (only for the generator part)
 
 The demo requires on top: SimpleITK and pydicom
+
+### Multiprocessing
+
+In order to use mulitprocessing, you **need** to specify it in your call to fit_generator:
+
+    model.fit_generator(generator=generator,
+                        use_multiprocessing=True,
+                        workers=8)
+                        
+use_multiprocessing should be True, otherwise it defaults to False and you'll be using only one thread. The number of workers (ie thread) is also to be choosen (1 is the default value), if you have no idea pick something between your CPU core count and thread count.
 
 ### Files
 + new_generator.py contains the generator class (it's built for generating images and their corresponding segmentation mask, but can be adapted to only work on the images without mask)
