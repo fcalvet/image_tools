@@ -3,7 +3,7 @@
 """
 Created on Thu May 17 13:32:10 2018
 
-@author: fcalvet
+@authors: fcalvet, fdubost
 under GPLv3
 
 Warning: this is for demo purpose only !
@@ -14,23 +14,24 @@ import SimpleITK as sitk
 import numpy as np
 from new_generator import DataGenerator
 
-def Read3Dircad(ID, im_mask="im"):
+def Read3Dircad(ID, isGT=False):
     '''
     Function to read files for the 3Dircadb project. Only for liver
     segmentations.
     '''
-    if im_mask=="im":
+    if not isGT:
         p=ID
-    elif im_mask=="mask":
+    else:
         p,im=os.path.split(ID)
         p,g=os.path.split(p)
         p=os.path.join(p,'masks/',im)
-    #print("reading:",im_mask," at ", p)
+        
     im = pydicom.read_file(p)
     im = im.pixel_array
+    
     return im
 
-def preprocess_step1_LITS(image, sz, mask=False):
+def preprocess_step1_LITS(image, mask=False):
     """
     Preprocesses the image (3d or 2d) by performing the following :
     2- Set pixels with hounsfield value great than 1200, to zero.
@@ -58,8 +59,8 @@ def preprocess_step1_LITS(image, sz, mask=False):
     img_slc = normalize_image(img_slc)
 
     return np.asarray(img_slc)
-
-def normalize_image(img, mask=True):
+    
+def normalize_image(img):
     """ 
     Normalize image values to [0,1]
     takes care of always returning floats
@@ -70,53 +71,53 @@ def normalize_image(img, mask=True):
     else:
         #print("an empty image")
         return 1.*img
+   
+def reader_wrapper(isGT):
+    def read_and_preprocess(ID, mask=False):
+        image = Read3Dircad(ID, isGT)
+        return preprocess_step1_LITS(image, mask)
+    return read_and_preprocess
     
-    
-def save_predict(model, generator):
-    """
-    Save image prediction using model for example X at path
-    Remember to set shuffle to False for the generator,
-    otherwise the order of samples between your data images and predicted images won't be the same
-    """
-    Y = model.predict_generator(generator, verbose = 1)
-    print(Y.shape)
-    generator.to_predict()
-    for i in range(int(len(Y)/generator.__len__())):
-        generator.save_images(Y[i:i+generator.__len__()], None, None, predict = True)
-
 
 if __name__ == '__main__':    
     ## Parameters
     # creating a single dictionnrary for parameters
+
+    GTisArray = True
     
     params = {}
-    params["dataset"] = "3Dircad"
     params["augmentation"] = [1,1,1]
-    augmentparams = dict()
-    params["random_deform"] = dict()
-    params["only"] = None
-    params["e_deform_g"] = dict()
-    params["e_deform_p"] = dict()
-    params["shape"] = [512, 512,1]
+    params["shape"] = [512, 512]
     batch_size = 15
+    
     # Standard data augmentation
+    params["random_deform"] = dict()
     params["random_deform"]['width_shift_range'] = 0.1
     params["random_deform"]['height_shift_range'] = 0.1
     params["random_deform"]['rotation_range_alpha'] = 20
 
     # Add elastic deformations
+    params["e_deform_g"] = dict()
     params["e_deform_g"]["points"] = 3
+    params["e_deform_g"]["sigma"] = 10
+    params["e_deform_p"] = dict()
     params["e_deform_p"]["alpha"] = 10
     params["e_deform_p"]["sigma"] = 3
-    params["e_deform_g"]["sigma"] = 10
 
-    params['ReadFunction'] = Read3Dircad
-    params['PreProcessing'] = preprocess_step1_LITS
+    #readers
+    params['reader_X'] = reader_wrapper(False) 
+    params['reader_Y'] = reader_wrapper(True)
+    
     # define saveFolder
     params["savefolder"] = 'demo/results/'
-    # Datasets
-    liste_id = ["demo/images/image_29","demo/images/image_30","demo/images/image_36","demo/images/image_49","demo/images/image_50","demo/images/image_68","demo/images/image_69","demo/images/image_77","demo/images/image_92","demo/images/image_105"]
-    print(liste_id)    
+    
+    # IDs
+    IDs = ["demo/images/image_29","demo/images/image_30","demo/images/image_36","demo/images/image_49","demo/images/image_50","demo/images/image_68","demo/images/image_69","demo/images/image_77","demo/images/image_92","demo/images/image_105"]
+    print(IDs) 
+    
     print("using params: ", params)
-    validation_generator = DataGenerator(liste_id, params, plotgenerator=1, batch_size=5)
-    X_valid, Y_valid = validation_generator.prepare_batch(liste_id) 
+    
+    #prepare generator
+    validation_generator = DataGenerator(IDs,GTisArray,params, batch_size=5)
+    validation_generator.plot_samples_IDs(IDs)
+    
